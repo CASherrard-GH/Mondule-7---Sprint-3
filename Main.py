@@ -10,21 +10,21 @@ print(CVD.isnull().sum())
 CVD=CVD.dropna()
 
 
-CVD.drop(['OBJECTID', 'Date_epicrv', 'NewCase', 'TotalCase', 'NewDeath'], axis=1, inplace=True)
+CVD.drop(['OBJECTID', "ISO_CODE", 'NewCase',  'NewDeath'], axis=1, inplace=True)
 
 print(CVD.dtypes)
 
 
-CVD['Date'] = [dt.datetime.strptime(x,'%d/%m/%y') for x in CVD['Date']] 
-print(CVD.dtypes)
+CVD['Date_epicrv'] = [dt.datetime.strptime(x,'%Y-%m-%d') for x in CVD['Date_epicrv']] 
+print(CVD)
 
 
 
 
-CVD.columns = ['Date_epicrv', 'COUNTRY_NAME', 'TotalDeath', 'TotalCase']
+CVD.columns = ["COUNTRY_NAME","Date_epicrv","TotalCase","TotalDeath"]
 
 
-CVD = pd.DataFrame(CVD.groupby(['COUNTRY_NAME', 'Date_epicrv'])['Total Case', 'TotalDeath'].sum()).reset_index()
+CVD = pd.DataFrame(CVD.groupby(['COUNTRY_NAME', 'Date_epicrv'])['TotalCase', 'TotalDeath'].sum()).reset_index()
 
 CVD = CVD.sort_values(by = ['COUNTRY_NAME','Date_epicrv'], ascending=False)
 print(CVD)
@@ -62,12 +62,12 @@ print(CVD_aggregate)
 plot_world_aggregate(CVD_aggregate, 'Whole World', size=4)
 
 
-def plot_aggregate_states(df, states, case_type='TotalCase', size=3, is_log=False):
-    f, ax = plt.subplots(1,1, figsize=(4*size, 3*size))
-    for state in states:
-        df_ = df[(df['COUNTRY_NAME']==state) & (df['Date_epicrv'] > '2020-03-01')] 
-        g = sns.lineplot(x="Date_epicrv", y=case_type, data=df_,  label=state)  
-        ax.text(max(df_['Date_epicrv']), max(df_[case_type]), str(state))
+def plot_aggregate_states(df, countrs, case_type='TotalCase', size=3, is_log=False):
+    f, ax = plt.subplots(10,10, figsize=(40*size, 30*size))
+    for countr in countrs:
+        df_ = df[(df['COUNTRY_NAME']==countr) & (df['Date_epicrv'] > '2020-03-01')] 
+        g = sns.lineplot(x="Date_epicrv", y=case_type, data=df_,  label=countr)  
+        ax.text(max(df_['Date_epicrv']), max(df_[case_type]), str(countr))
     plt.xlabel('Date_epicrv')
     plt.ylabel(f' {case_type} ')
     plt.title(f' {case_type} ')
@@ -77,7 +77,7 @@ def plot_aggregate_states(df, states, case_type='TotalCase', size=3, is_log=Fals
     ax.grid(color='black', linestyle='dotted', linewidth=0.75)
     plt.show()  
 
-CVD_state_aggregate = CVD.groupby(['COUNTRY_NAME', 'Date_epicrv']).sum().reset_index()
+CVD_state_aggregate = CVD.groupby(['COUNTRY_NAME', 'TotalDeath']).sum().reset_index()
 
 
 countries=["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua and Barbuda,","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh",
@@ -97,14 +97,14 @@ countries=["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Anti
             "The United Kingdom", "Timor-Leste", "Togo", "Trinidad and Tobago", "Tunisia", "Turkey", "Turks and Caicos Islands", "Uganda", "Ukraine", "United Arab Emirates", "United Republic of Tanzania", "United States of America"
             "United States Virgin Islands", "Uruguay", "Uzbekistan", "Venezuela (Bolivarian Republic of)", "Viet Nam", "Yemen", "Zambia", "Zimbabwe"]
 
-plot_aggregate_states(CVD_state_aggregate, countries, case_type = 'Total Cases', size=4)    
+plot_aggregate_states(CVD_state_aggregate, countries, case_type='TotalCase', size=4)
 
-plot_aggregate_states(CVD_state_aggregate, countries, case_type = 'Total Deaths', size=4)
+plot_aggregate_states(CVD_state_aggregate, countries, case_type = 'TotalDeath', size=4)
 
 
 
 def plot_mortality(df, title='Deaths', size=1):
-    f, ax = plt.subplots(1,1, figsize=(4*size,2*size))
+    f, ax = plt.subplots(1,1, figsize=(40*size,20*size))
     g = sns.lineplot(x="Date", y='Mortality (Deaths/Cases)', data=df, color='blue', label='Mortality (Deaths / Total Cases)')
     plt.xlabel('Date_epicrv')
     plt.ylabel(f'Mortality {title} [%]')
@@ -113,8 +113,8 @@ def plot_mortality(df, title='Deaths', size=1):
     ax.grid(color='black', linestyle='dashed', linewidth=1)
     plt.show()  
 
-CVD_aggregate['Mortality (Deaths/Cases)'] = CVD_aggregate['Total Deaths'] / CVD_aggregate['Total Cases'] * 100
-plot_mortality(CVD_aggregate, title = ' - Whole World', size = 3)
+CVD_aggregate['Mortality (Deaths/Cases)'] = CVD_aggregate['Total Deaths'] / CVD_aggregate['Total Cases'] * 1000
+plot_mortality(CVD_aggregate, title = ' - Whole World', size = 30)
 
 
 
